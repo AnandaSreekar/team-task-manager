@@ -1,16 +1,22 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-export default function ProtectedRoute() {
-  const { user, loading } = useAuth();
-
+const ProtectedRoute = ({ children }) => {
+  const { user, token, loading } = useAuth();
+  
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-        <div className="spinner" style={{ width: 40, height: 40 }} />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       </div>
     );
   }
+  
+  if (!token && !user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+};
 
-  return user ? <Outlet /> : <Navigate to="/login" replace />;
-}
+export default ProtectedRoute;
