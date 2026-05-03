@@ -1,53 +1,54 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { login as loginApi, register as registerApi, getMe as apiGetMe } from '../api/auth.api';
+import { login as loginApi, register as registerApi, getMe } from '../api/auth.api';
 
 const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const restoreSession = async () => {
-      if (token) {
+    const initAuth = async () => {
+      const savedToken = localStorage.getItem('token');
+      if (savedToken) {
         try {
-          const res = await apiGetMe();
-          setUser(res.data.user);
-        } catch (error) {
-          console.error('Session restore failed:', error);
-          logout(); // Clear invalid token
+          const res = await getMe();
+          setUser(res.data.data);
+          setToken(savedToken);
+        } catch (err) {
+          localStorage.removeItem('token');
+          setToken(null);
+          setUser(null);
         }
       }
       setLoading(false);
     };
-
-    restoreSession();
-  }, [token]);
+    initAuth();
+  }, []);
 
   const login = async (email, password) => {
-    const response = await loginApi(email, password);
-    const { token, data } = response.data;
-    localStorage.setItem('token', token);
-    setToken(token);
+    const res = await loginApi(email, password);
+    const { token: newToken, data } = res.data;
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
     setUser(data.user || data);
-    return response;
+    return res;
   };
 
   const register = async (name, email, password) => {
-    const response = await registerApi(name, email, password);
-    const { token, data } = response.data;
-    localStorage.setItem('token', token);
-    setToken(token);
+    const res = await registerApi(name, email, password);
+    const { token: newToken, data } = res.data;
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
     setUser(data.user || data);
-    return response;
+    return res;
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
-    window.location.href = '/login';
   };
 
   return (
@@ -55,10 +56,6 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
-  return ctx;
 };
+
+export const useAuth = () => useContext(AuthContext);
