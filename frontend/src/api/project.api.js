@@ -1,31 +1,8 @@
 import api from './axios';
 
-export const getProjects = async () => {
-  const response = await api.get('/projects');
-  return response.data;
-};
-
-export const getProjectById = async (id) => {
-  const response = await api.get(`/projects/${id}`);
-  return response.data;
-};
-
-export const createProject = async (data) => {
-  const response = await api.post('/projects', data);
-  return response.data;
-};
-
-export const addMember = async (projectId, data) => {
-  const response = await api.post(`/projects/${projectId}/members`, data);
-  return response.data;
-};
-
-export const deleteProject = async (id) => {
-  const response = await api.delete(`/projects/${id}`);
-  return response.data;
-};
-
-export const removeMember = async (projectId, userId) => {
-  const response = await api.delete(`/projects/${projectId}/members/${userId}`);
-  return response.data;
-};
+export const getProjects = () => api.get('/api/projects');
+export const getProjectById = (id) => api.get(`/api/projects/${id}`);
+export const createProject = (data) => api.post('/api/projects', data);
+export const addMember = (id, data) => api.post(`/api/projects/${id}/members`, data);
+export const removeMember = (projectId, userId) => api.delete(`/api/projects/${projectId}/members/${userId}`);
+export const deleteProject = (id) => api.delete(`/api/projects/${id}`);

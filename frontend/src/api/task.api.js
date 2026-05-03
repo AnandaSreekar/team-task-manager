@@ -1,27 +1,11 @@
 import api from './axios';
 
-export const getTasks = async (filters = {}) => {
+export const getTasks = (filters = {}) => {
   const params = new URLSearchParams(filters).toString();
-  const response = await api.get(`/tasks?${params}`);
-  return response.data;
+  return api.get(`/api/tasks${params ? '?' + params : ''}`);
 };
 
-export const getDashboard = async () => {
-  const response = await api.get('/tasks/dashboard');
-  return response.data;
-};
-
-export const createTask = async (data) => {
-  const response = await api.post('/tasks', data);
-  return response.data;
-};
-
-export const updateTask = async (id, data) => {
-  const response = await api.patch(`/tasks/${id}`, data);
-  return response.data;
-};
-
-export const deleteTask = async (id) => {
-  const response = await api.delete(`/tasks/${id}`);
-  return response.data;
-};
+export const getDashboard = () => api.get('/api/tasks/dashboard');
+export const createTask = (data) => api.post('/api/tasks', data);
+export const updateTask = (id, data) => api.patch(`/api/tasks/${id}`, data);
+export const deleteTask = (id) => api.delete(`/api/tasks/${id}`);
