@@ -4,11 +4,26 @@ import { login as loginApi, register as registerApi, getMe } from '../api/auth.a
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || 'null'));
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const storedToken = localStorage.getItem('token');
+  const validToken = storedToken && storedToken !== 'undefined' && storedToken !== 'null' ? storedToken : null;
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem('user');
+    return storedUser && storedUser !== 'undefined' ? JSON.parse(storedUser) : null;
+  });
+  const [token, setToken] = useState(validToken);
   const [loading, setLoading] = useState(true);
 
-  console.log('AuthContext init - token exists:', !!localStorage.getItem('token'));
+  console.log('AuthContext init - token exists:', !!validToken);
+
+  useEffect(() => {
+    const t = localStorage.getItem('token');
+    if (t === 'undefined' || t === 'null' || t === '') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setToken(null);
+      setUser(null);
+    }
+  }, []);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -33,24 +48,32 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const res = await loginApi(email, password);
-    const { token: newToken, data } = res.data;
-    const receivedUser = data.user || data;
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(receivedUser));
-    setToken(newToken);
-    setUser(receivedUser);
-    return res;
+    // If backend returns { success, token, user } or { success, data: { token, user } }
+    // Let's handle both just in case, but user said token and user are in res.data
+    const token = res.data.token || res.data.data?.token;
+    const user = res.data.user || res.data.data?.user;
+    
+    if (!token) throw new Error('No token received from server');
+    
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    setToken(token);
+    setUser(user);
+    return user;
   };
 
   const register = async (name, email, password) => {
     const res = await registerApi(name, email, password);
-    const { token: newToken, data } = res.data;
-    const receivedUser = data.user || data;
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(receivedUser));
-    setToken(newToken);
-    setUser(receivedUser);
-    return res;
+    const token = res.data.token || res.data.data?.token;
+    const user = res.data.user || res.data.data?.user;
+    
+    if (!token) throw new Error('No token received from server');
+    
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    setToken(token);
+    setUser(user);
+    return user;
   };
 
   const logout = () => {
