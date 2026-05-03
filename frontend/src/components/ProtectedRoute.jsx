@@ -2,8 +2,10 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
-  const { user, token, loading } = useAuth();
+  const { token, loading } = useAuth();
   
+  console.log('ProtectedRoute - token:', !!token, 'loading:', loading);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -12,7 +14,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
   
-  if (!token && !user) {
+  if (!token) {
     return <Navigate to="/login" replace />;
   }
   
