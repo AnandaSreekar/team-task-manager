@@ -17,7 +17,8 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      navigate('/dashboard');
+      // Small delay to let state settle
+      setTimeout(() => navigate('/dashboard'), 50);
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {

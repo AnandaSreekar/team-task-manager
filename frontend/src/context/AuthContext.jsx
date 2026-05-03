@@ -3,27 +3,31 @@ import { login as loginApi, register as registerApi, getMe } from '../api/auth.a
 
 const AuthContext = createContext(null);
 
+const getInitialToken = () => {
+  const t = localStorage.getItem('token');
+  if (!t || t === 'undefined' || t === 'null') {
+    localStorage.removeItem('token');
+    return null;
+  }
+  return t;
+};
+
+const getInitialUser = () => {
+  try {
+    const u = localStorage.getItem('user');
+    if (!u || u === 'undefined') return null;
+    return JSON.parse(u);
+  } catch {
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
-  const storedToken = localStorage.getItem('token');
-  const validToken = storedToken && storedToken !== 'undefined' && storedToken !== 'null' ? storedToken : null;
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem('user');
-    return storedUser && storedUser !== 'undefined' ? JSON.parse(storedUser) : null;
-  });
-  const [token, setToken] = useState(validToken);
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(getInitialToken);
+  const [user, setUser] = useState(getInitialUser);
+  const [loading, setLoading] = useState(false);
 
-  console.log('AuthContext init - token exists:', !!validToken);
-
-  useEffect(() => {
-    const t = localStorage.getItem('token');
-    if (t === 'undefined' || t === 'null' || t === '') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setToken(null);
-      setUser(null);
-    }
-  }, []);
+  console.log('AuthContext init - token exists:', !!token);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -47,19 +51,28 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const res = await loginApi(email, password);
-    // If backend returns { success, token, user } or { success, data: { token, user } }
-    // Let's handle both just in case, but user said token and user are in res.data
-    const token = res.data.token || res.data.data?.token;
-    const user = res.data.user || res.data.data?.user;
-    
-    if (!token) throw new Error('No token received from server');
-    
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    setToken(token);
-    setUser(user);
-    return user;
+    try {
+      const res = await loginApi(email, password);
+      const data = res.data;
+      
+      // Support both response shapes
+      const token = data.token || data.data?.token;
+      const user = data.user || data.data?.user;
+      
+      if (!token) throw new Error('No token in response');
+      
+      // STEP 1: Save to localStorage FIRST (synchronous)
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      // STEP 2: Update React state
+      setToken(token);
+      setUser(user);
+      
+      return { token, user };
+    } catch (error) {
+      throw error;
+    }
   };
 
   const register = async (name, email, password) => {
