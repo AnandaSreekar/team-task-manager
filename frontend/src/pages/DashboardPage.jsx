@@ -1,20 +1,52 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getDashboard } from '../api/task.api';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import StatsCard from '../components/StatsCard';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [data, setData] = useState(null);
+  
+  // Provide safe default state
+  const [data, setData] = useState({
+    totalTasks: 0,
+    totalProjects: 0,
+    tasksByStatus: {},
+    overdueTasks: [],
+    myAssignedTasks: []
+  });
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    getDashboard()
-      .then((res) => setData(res.data))
-      .catch((err) => setError(err.response?.data?.message || 'Failed to load dashboard data'))
-      .finally(() => setLoading(false));
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/tasks/dashboard`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        const resData = response.data?.data || response.data || {};
+        
+        setData({
+          totalTasks: resData.totalTasks ?? 0,
+          totalProjects: resData.totalProjects ?? 0,
+          tasksByStatus: resData.tasksByStatus || {},
+          overdueTasks: resData.overdueTasks || [],
+          myAssignedTasks: resData.myAssignedTasks || []
+        });
+      } catch (err) {
+        console.error('Dashboard fetch error:', err);
+        setError(err.response?.data?.message || 'Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchDashboard();
   }, []);
 
   const hour = new Date().getHours();
@@ -45,16 +77,22 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="bg-red-50 text-red-600 p-6 rounded-xl font-medium border border-red-100 flex items-center">
-        <span className="text-2xl mr-3">⚠️</span> {error}
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-red-400 text-xl flex items-center gap-3">
+          <span className="text-2xl">⚠️</span> {error}
+        </div>
       </div>
     );
   }
 
-  // Calculate completion percentage
-  const doneTasks = data.tasksByStatus?.DONE || 0;
-  const totalTasks = data.totalTasks || 0;
+  // Calculate completion percentage safely
+  const doneTasks = data?.tasksByStatus?.DONE || 0;
+  const totalTasks = data?.totalTasks || 0;
   const completionRate = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+
+  // Safe arrays for mapping
+  const overdueList = data?.overdueTasks || [];
+  const assignedList = data?.myAssignedTasks || [];
 
   // Priority color map
   const priorityColor = {
@@ -92,7 +130,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard 
           title="Total Projects" 
-          value={data.totalProjects} 
+          value={data?.totalProjects ?? 0} 
           icon="📁" 
           bgColor="bg-blue-100" 
           textColor="text-gray-900" 
@@ -100,7 +138,7 @@ export default function DashboardPage() {
         />
         <StatsCard 
           title="Total Tasks" 
-          value={data.totalTasks} 
+          value={data?.totalTasks ?? 0} 
           icon="✅" 
           bgColor="bg-indigo-100" 
           textColor="text-indigo-600" 
@@ -116,12 +154,12 @@ export default function DashboardPage() {
         />
         <StatsCard 
           title="Overdue" 
-          value={data.overdueTasks?.length || 0} 
-          icon={data.overdueTasks?.length > 0 ? "🔥" : "✨"} 
-          bgColor={data.overdueTasks?.length > 0 ? "bg-red-100" : "bg-green-100"} 
-          textColor={data.overdueTasks?.length > 0 ? "text-red-600" : "text-green-600"} 
+          value={overdueList.length} 
+          icon={overdueList.length > 0 ? "🔥" : "✨"} 
+          bgColor={overdueList.length > 0 ? "bg-red-100" : "bg-green-100"} 
+          textColor={overdueList.length > 0 ? "text-red-600" : "text-green-600"} 
           subtitle="Need attention now" 
-          animatePulse={data.overdueTasks?.length > 0}
+          animatePulse={overdueList.length > 0}
         />
       </div>
 
@@ -133,11 +171,11 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3 mb-2">
             <h2 className="text-lg font-semibold text-red-600">🔥 Overdue Tasks</h2>
             <span className="bg-red-100 text-red-700 py-0.5 px-2.5 rounded-full text-xs font-bold">
-              {data.overdueTasks?.length || 0}
+              {overdueList.length}
             </span>
           </div>
 
-          {data.overdueTasks?.length === 0 ? (
+          {overdueList.length === 0 ? (
             <div className="bg-green-50 border border-green-200 rounded-xl p-8 flex flex-col items-center justify-center text-center">
               <span className="text-4xl mb-3">✅</span>
               <h3 className="text-green-800 font-bold text-lg">You're all caught up! Great work 🎉</h3>
@@ -145,20 +183,20 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {data.overdueTasks?.map((task) => (
+              {overdueList.map((task) => (
                 <div key={task.id} className="bg-white rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-red-500 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-transform duration-200 hover:-translate-y-1">
                   <div>
-                    <h3 className="font-bold text-gray-900 text-lg leading-tight mb-1">{task.title}</h3>
-                    <p className="text-sm text-gray-500">{task.project?.name || 'Unknown Project'}</p>
+                    <h3 className="font-bold text-gray-900 text-lg leading-tight mb-1">{task?.title || 'Untitled'}</h3>
+                    <p className="text-sm text-gray-500">{task?.project?.name || 'Unknown Project'}</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-3 shrink-0">
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${priorityColor[task.priority]}`}>
-                      {task.priority}
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${priorityColor[task?.priority] || 'bg-gray-100'}`}>
+                      {task?.priority || 'NONE'}
                     </span>
                     <span className="bg-red-50 text-red-700 border border-red-200 text-xs font-bold px-2.5 py-1 rounded-lg">
-                      {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} 
+                      {task?.dueDate ? new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No date'} 
                       <span className="mx-1">•</span> 
-                      {task.daysUntilDue < 0 ? `${Math.abs(task.daysUntilDue)} days overdue` : 'Due soon'}
+                      {(task?.daysUntilDue ?? 0) < 0 ? `${Math.abs(task.daysUntilDue)} days overdue` : 'Due soon'}
                     </span>
                   </div>
                 </div>
@@ -172,12 +210,12 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3 mb-2">
             <h2 className="text-lg font-semibold text-gray-800">📋 My Tasks</h2>
             <span className="bg-gray-200 text-gray-700 py-0.5 px-2.5 rounded-full text-xs font-bold">
-              {data.myAssignedTasks?.length || 0}
+              {assignedList.length}
             </span>
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
-            {data.myAssignedTasks?.length === 0 ? (
+            {assignedList.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
                 <span className="text-3xl mb-2 block">📝</span>
                 <p>No tasks assigned to you yet.</p>
@@ -185,17 +223,17 @@ export default function DashboardPage() {
             ) : (
               <>
                 <div className="divide-y divide-gray-100 flex-1">
-                  {data.myAssignedTasks?.slice(0, 6).map((task) => (
+                  {assignedList.slice(0, 6).map((task) => (
                     <div key={task.id} className="p-4 hover:bg-gray-50 transition-colors flex items-start gap-3">
-                      <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${statusColorDot[task.status]}`}></div>
+                      <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${statusColorDot[task?.status] || 'bg-gray-300'}`}></div>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 truncate">{task.title}</p>
-                        <p className="text-xs text-gray-500 truncate mt-0.5">{task.project?.name}</p>
+                        <p className="text-sm font-semibold text-gray-900 truncate">{task?.title || 'Untitled'}</p>
+                        <p className="text-xs text-gray-500 truncate mt-0.5">{task?.project?.name || 'Unknown Project'}</p>
                       </div>
                     </div>
                   ))}
                 </div>
-                {data.myAssignedTasks?.length > 6 && (
+                {assignedList.length > 6 && (
                   <div className="p-3 bg-gray-50 border-t border-gray-100 text-center">
                     <Link to="/tasks" className="text-sm font-semibold text-indigo-600 hover:text-indigo-800">
                       View all tasks →
