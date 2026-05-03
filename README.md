@@ -1,8 +1,11 @@
 # TaskFlow - Team Task Manager
 
 ## Live Demo
-- Frontend: [URL]
-- Backend API: [URL]
+- Frontend: https://YOUR-NETLIFY-URL.netlify.app
+- Backend API: https://team-task-manager-production-5374.up.railway.app
+- Demo credentials:
+  - Admin: admin@admin.com / Admin@123
+  - Member: Register a new account
 
 ## Features
 - JWT Authentication with role-based access (Admin/Member)
