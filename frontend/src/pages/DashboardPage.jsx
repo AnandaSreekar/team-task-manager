@@ -53,6 +53,8 @@ export default function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   const firstName = user?.name?.split(' ')[0] || '';
 
+  console.log('Dashboard rendering, loading state:', loading);
+
   if (loading) {
     return (
       <div className="space-y-8">
@@ -109,7 +111,10 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in pb-8">
+    <div className="min-h-screen bg-gray-900 text-white space-y-8 animate-fade-in pb-8">
+      <div style={{color: 'red', fontSize: '32px', background: 'white', padding: '20px', position: 'fixed', top: 0, left: 0, zIndex: 9999}}>
+        DASHBOARD IS RENDERING
+      </div>
       
       {/* SECTION A: Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
