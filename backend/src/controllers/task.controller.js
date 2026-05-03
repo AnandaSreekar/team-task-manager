@@ -1,6 +1,14 @@
 /**
  * @file task.controller.js
  * @description Controller for Task management and Dashboard API.
+ *
+ * Route registration order in task.routes.js (MUST be maintained):
+ *   GET  /dashboard   ← registered FIRST to avoid being caught by /:id
+ *   POST /
+ *   GET  /
+ *   GET  /:id
+ *   PATCH /:id
+ *   DELETE /:id
  */
 
 const prisma = require('../config/prisma');
@@ -370,6 +378,7 @@ const getDashboard = async (req, res, next) => {
     });
 
   } catch (err) {
+    console.error('Dashboard route error:', err);
     next(err);
   }
 };
