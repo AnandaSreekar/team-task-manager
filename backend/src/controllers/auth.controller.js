@@ -123,6 +123,7 @@ const resolveRole = (email) => {
  */
 const register = async (req, res, next) => {
   try {
+    console.log('Register attempt:', req.body);
     const { name, email, password } = req.body;
 
     // ── Step 1: Duplicate email check ─────────────────────────────────────────
@@ -162,10 +163,12 @@ const register = async (req, res, next) => {
       },
     });
 
-  } catch (err) {
-    // Delegate to the global error handler (handles Prisma P2002 unique
-    // constraint violations as a safety net, JWT errors, etc.)
-    next(err);
+  } catch (error) {
+    console.log('Error:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
