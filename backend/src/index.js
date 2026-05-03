@@ -33,7 +33,6 @@ const { notFound }     = require('./middleware/notFound.middleware');
 // ─────────────────────────────────────────────────────────────────────────────
 const app    = express();
 const prisma = new PrismaClient();
-const PORT   = process.env.PORT || 5000;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Global middleware
@@ -127,11 +126,11 @@ app.use(errorHandler);
 // ─────────────────────────────────────────────────────────────────────────────
 // Start server
 // ─────────────────────────────────────────────────────────────────────────────
-const server = app.listen(PORT, () => {
-  console.log(`\n🚀  Server running   → http://localhost:${PORT}`);
-  console.log(`📊  Health check     → http://localhost:${PORT}/api/health`);
-  console.log(`🔑  Auth endpoints   → http://localhost:${PORT}/api/auth`);
-  console.log(`🌍  Environment      → ${process.env.NODE_ENV || 'development'}\n`);
+const PORT = process.env.PORT || 5000;
+
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV}`);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -153,4 +152,3 @@ const gracefulShutdown = async (signal) => {
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT',  () => gracefulShutdown('SIGINT'));
 
-module.exports = app;
