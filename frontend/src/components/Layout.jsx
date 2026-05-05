@@ -1,94 +1,91 @@
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { LayoutDashboard, FolderKanban, CheckSquare, Users, User, LogOut, Zap, Bell } from 'lucide-react';
 
-export default function Layout() {
+const Layout = () => {
   const { user, logout } = useAuth();
-  const location = useLocation();
-  
-  // Format page title from pathname
-  const path = location.pathname.split('/')[1] || 'dashboard';
-  const pageTitle = path.charAt(0).toUpperCase() + path.slice(1);
-  
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    weekday: 'long', month: 'long', day: 'numeric'
-  });
+  const navigate = useNavigate();
 
-  const getInitials = (name) => name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?';
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const navItems = [
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Projects', path: '/projects', icon: FolderKanban },
+    { name: 'Tasks', path: '/tasks', icon: CheckSquare },
+    { name: 'Team', path: '/users', icon: Users, adminOnly: true },
+    { name: 'Profile', path: '/profile', icon: User },
+  ].filter(item => !item.adminOnly || user?.role === 'admin');
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Sidebar - Fixed left */}
-      <aside className="w-[240px] flex-shrink-0 bg-white border-r border-gray-200 flex flex-col hidden md:flex">
-        {/* App Logo */}
-        <div className="h-16 flex items-center px-6 border-b border-gray-100">
-          <span className="text-xl mr-2">⚡</span>
-          <span className="font-bold text-xl text-indigo-600 tracking-tight">TaskFlow</span>
+    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+      {/* Sidebar */}
+      <aside className="hidden md:flex flex-col w-64 bg-slate-900 shadow-xl z-20">
+        <div className="p-6 flex items-center gap-3">
+          <div className="w-8 h-8 bg-indigo-500 rounded flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+            <Zap size={18} fill="currentColor" />
+          </div>
+          <span className="text-xl font-bold text-white tracking-tight">TaskFlow</span>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-          <NavLink 
-            to="/dashboard" 
-            className={({ isActive }) => `flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
-          >
-            <span className="mr-3 text-lg">📊</span>
-            Dashboard
-          </NavLink>
-          
-          <NavLink 
-            to="/projects" 
-            className={({ isActive }) => `flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
-          >
-            <span className="mr-3 text-lg">📁</span>
-            Projects
-          </NavLink>
-          
-          <NavLink 
-            to="/tasks" 
-            className={({ isActive }) => `flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
-          >
-            <span className="mr-3 text-lg">✅</span>
-            Tasks
-          </NavLink>
+        <nav className="mt-4 flex-1">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) => `
+                flex items-center gap-3 px-6 py-3 text-sm font-medium transition-all group
+                ${isActive
+                  ? "bg-indigo-600/20 border-r-4 border-indigo-500 text-indigo-400"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"}
+              `}
+            >
+              <item.icon size={18} />
+              {item.name}
+            </NavLink>
+          ))}
         </nav>
 
-        {/* User Profile */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center mb-4">
-            <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shrink-0">
-              {getInitials(user?.name)}
+        <div className="p-4 border-t border-slate-800">
+          <div className="bg-slate-800 rounded-xl p-3 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-bold text-white uppercase">
+              {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
             </div>
-            <div className="ml-3 overflow-hidden">
-              <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
-              <div className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-semibold ${user?.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                {user?.role}
-              </div>
+            <div className="flex-1 overflow-hidden">
+              <p className="text-xs font-semibold text-white truncate">{user?.name || 'User'}</p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-widest">{user?.role || 'Member'} Role</p>
             </div>
           </div>
-          <button 
-            onClick={logout}
-            className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 w-full px-3 py-3 mt-4 text-xs font-bold text-slate-400 hover:text-rose-400 transition-colors uppercase tracking-widest"
           >
-            Logout
+            <LogOut size={16} /> Sign Out
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <header className="h-16 flex-shrink-0 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-10">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{pageTitle}</h1>
-          <div className="text-sm font-medium text-gray-500 bg-gray-100 px-4 py-1.5 rounded-full">
-            {currentDate}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8">
+          <div>
+            <h1 className="text-lg font-bold text-slate-800">Workspace Overview</h1>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Active Sprint</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-xs hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100">+ NEW TASK</button>
+            <button className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-50"><Bell size={18} /></button>
           </div>
         </header>
 
-        {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 p-8">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
           <Outlet />
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
-}
+};
+
+export default Layout;
