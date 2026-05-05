@@ -1,105 +1,104 @@
-TaskFlow — Enterprise Team Task Manager
+🚀 TaskFlow — Enterprise Team Task Manager
 
-TaskFlow is a production-ready, full-stack project management system designed for high-performance teams. It follows a Security-First and AI-Enhanced architecture, going beyond basic CRUD applications by integrating intelligent insights and real-time analytics for better decision-making.
+TaskFlow is a production-ready full-stack project management system built for high-performance teams.
+It follows a Security-First and AI-Enhanced approach, combining real-time analytics with intelligent insights to go beyond basic task management.
 
-Live Access
-Production Frontend: https://taskflow-me.netlify.app
-Production API Hub: https://team-task-manager-production-5374.up.railway.app
-GitHub Repository: https://github.com/AnandaSreekar/team-task-manager
-Key Features
-1. Intelligent AI Briefing
-Integrated Google Gemini API
-Generates automated “Pulse Reports” for team leads
-Analyzes project velocity and workspace activity
-Produces structured, actionable summaries of team performance
-2. Advanced Analytics Engine
-Built using Recharts
-Real-time visualization of project data:
-Velocity Charts: Track task completion trends over time
-Status Distribution: Identify bottlenecks (To-Do / In-Progress / Done)
-3. Enterprise Security Model
-JWT Authentication: Secure session handling with token-based auth
-RBAC (Role-Based Access Control):
+🔗 Live Demo
+🌐 Frontend: https://taskflow-me.netlify.app
+⚙️ Backend API: https://team-task-manager-production-5374.up.railway.app
+📂 Repository: https://github.com/AnandaSreekar/team-task-manager
+✨ Features
+🧠 AI-Powered Workspace Insights
+Integrated Google Gemini
+Generates automated project “Pulse Reports”
+Provides actionable summaries based on team activity
+📊 Real-Time Analytics Dashboard
+Built with Recharts
+Visual insights:
+Task completion trends (Velocity charts)
+Status distribution (To-Do / In-Progress / Done)
+🛡️ Enterprise-Grade Security
+JWT-based authentication
+Role-Based Access Control (RBAC):
 ADMIN → Full access
-MEMBER → Restricted access
-Auto Admin Detection: Emails with @admin.com automatically assigned admin role
-4. Professional UI/UX Design
-Built with Framer Motion
-Smooth animations and transitions
-Modular architecture with Error Boundaries (prevents crashes)
-Fully responsive (Desktop + Mobile optimized)
-Tech Stack
+MEMBER → Limited access
+Automatic admin detection (@admin.com domain logic)
+🎨 Modern UI/UX
+Smooth animations using Framer Motion
+Responsive design (Mobile + Desktop)
+Error boundaries to prevent UI crashes
+🧰 Tech Stack
 
-Frontend:
+Frontend
 
 React 19
 Vite
 Tailwind CSS
 Framer Motion
-Lucide Icons
 Recharts
 
-Backend:
+Backend
 
 Node.js
 Express.js
 Prisma ORM
 
-Database:
+Database
 
-PostgreSQL (Railway Hosting)
+PostgreSQL (Railway)
 
-AI Integration:
+AI Integration
 
 Google Gemini API
-API Structure
-Authentication
-/api/auth/register
-/api/auth/login
-/api/auth/me
-Projects
-Full CRUD operations
-Team member assignment
-Tasks
-Task lifecycle management
-Overdue detection (isOverdue)
-Analytics
-/api/tasks/dashboard
-Generates workspace-level metrics
-Local Setup Instructions
+🧱 API Structure
+Auth:
+  POST   /api/auth/register
+  POST   /api/auth/login
+  GET    /api/auth/me
 
-Clone Repository
+Projects:
+  CRUD operations + team allocation
 
+Tasks:
+  Task lifecycle + overdue detection
+
+Analytics:
+  GET /api/tasks/dashboard
+⚙️ Local Setup
+1. Clone Repository
 git clone https://github.com/AnandaSreekar/team-task-manager.git
+cd team-task-manager
+2. Environment Variables
 
-Environment Configuration
+Frontend (.env)
 
-Frontend (.env):
+VITE_API_URL=your_api_url
+VITE_GEMINI_API_KEY=your_api_key
 
-VITE_API_URL=<your_api_url>
-VITE_GEMINI_API_KEY=<your_gemini_api_key>
+Backend (.env)
 
-Backend (.env):
-
-DATABASE_URL=<your_database_url>
-JWT_SECRET=<your_secret_key>
-
-Install Dependencies
-
+DATABASE_URL=your_database_url
+JWT_SECRET=your_secret
+3. Install Dependencies
 npm install
 cd backend
 npm install
-
-Database Migration
-
+4. Database Setup
 npx prisma migrate dev
-
-Run Application
-
+5. Run Project
 npm run dev
-Demo Credentials
-Admin Access
+🔑 Demo Credentials
+
+Admin
+
 Email: admin@admin.com
 Password: Admin@123
-Member Access
-Register using any valid email
+
+Member
+
+Register with any email
+📌 Highlights
+Full-stack architecture with scalable design
+AI integration for real-world use cases
+Clean UI with production-level polish
+Secure authentication and role management
