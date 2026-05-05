@@ -1,7 +1,7 @@
 🚀 TaskFlow — Enterprise Team Task Manager
 
 TaskFlow is a production-ready full-stack project management system built for high-performance teams.
-It follows a Security-First and AI-Enhanced approach, combining real-time analytics with intelligent insights to go beyond basic task management.
+It follows a Security-First and AI-Enhanced approach, combining real-time analytics with intelligent insights.
 
 🔗 Live Demo
 🌐 Frontend: https://taskflow-me.netlify.app
@@ -9,61 +9,53 @@ It follows a Security-First and AI-Enhanced approach, combining real-time analyt
 📂 Repository: https://github.com/AnandaSreekar/team-task-manager
 ✨ Features
 🧠 AI-Powered Workspace Insights
-Integrated Google Gemini
-Generates automated project “Pulse Reports”
+Google Gemini integration
+Generates automated Pulse Reports
 Provides actionable summaries based on team activity
 📊 Real-Time Analytics Dashboard
 Built with Recharts
-Visual insights:
-Task completion trends (Velocity charts)
+Includes:
+Velocity charts (task completion trends)
 Status distribution (To-Do / In-Progress / Done)
 🛡️ Enterprise-Grade Security
 JWT-based authentication
 Role-Based Access Control (RBAC):
 ADMIN → Full access
 MEMBER → Limited access
-Automatic admin detection (@admin.com domain logic)
+Auto admin detection (@admin.com)
 🎨 Modern UI/UX
-Smooth animations using Framer Motion
-Responsive design (Mobile + Desktop)
-Error boundaries to prevent UI crashes
+Smooth animations (Framer Motion)
+Fully responsive (Mobile + Desktop)
+Error boundaries to prevent crashes
 🧰 Tech Stack
-
 Frontend
-
 React 19
 Vite
 Tailwind CSS
 Framer Motion
 Recharts
-
 Backend
-
 Node.js
 Express.js
 Prisma ORM
-
 Database
-
 PostgreSQL (Railway)
-
 AI Integration
-
 Google Gemini API
 🧱 API Structure
 Auth:
-  POST   /api/auth/register
-  POST   /api/auth/login
-  GET    /api/auth/me
+POST   /api/auth/register
+POST   /api/auth/login
+GET    /api/auth/me
 
 Projects:
-  CRUD operations + team allocation
+CRUD operations + team allocation
 
 Tasks:
-  Task lifecycle + overdue detection
+Task lifecycle + overdue detection
 
 Analytics:
-  GET /api/tasks/dashboard
+GET /api/tasks/dashboard
 ⚙️ Local Setup
 1. Clone Repository
 git clone https://github.com/AnandaSreekar/team-task-manager.git
@@ -97,8 +89,8 @@ Password: Admin@123
 Member
 
 Register with any email
-📌 Highlights
-Full-stack architecture with scalable design
-AI integration for real-world use cases
+📌 Key Highlights
+Full-stack scalable architecture
+AI integration for real-world insights
 Clean UI with production-level polish
 Secure authentication and role management
