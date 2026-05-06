@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getTasks, updateTask } from '../api/task.api';
 import { useAuth } from '../context/AuthContext';
-import { useToast } from '../components/Toast';
+import { useToast } from '../context/ToastContext';
+import { Search, Filter, CheckCircle2, Circle, Clock, AlertCircle, ChevronDown, User } from 'lucide-react';
+import Skeleton, { TableSkeleton } from '../components/Skeleton';
 
 export default function TasksPage() {
   const { user } = useAuth();
@@ -34,8 +36,10 @@ export default function TasksPage() {
       if (search.trim()) filters.search = search.trim();
 
       const res = await getTasks(filters);
-      setTasks(res.data.tasks || []);
+      const data = res.data?.data?.tasks || res.data?.tasks || res.data || [];
+      setTasks(Array.isArray(data) ? data : []);
     } catch (err) {
+      console.error('Fetch tasks error:', err);
       toast.error('Failed to load tasks');
     } finally {
       setLoading(false);
@@ -43,12 +47,21 @@ export default function TasksPage() {
   };
 
   useEffect(() => {
-    // Debounce search
     const timer = setTimeout(() => {
       fetchTasks();
     }, 300);
     return () => clearTimeout(timer);
   }, [filterStatus, filterPriority, search]);
+
+  if (loading) return (
+    <div className="space-y-8 p-4">
+      <div className="flex justify-between items-center mb-8">
+        <Skeleton className="h-10 w-48 rounded-xl" />
+        <Skeleton className="h-10 w-32 rounded-xl" />
+      </div>
+      <TableSkeleton rows={6} cols={3} />
+    </div>
+  );
 
   const handleStatusChange = async (taskId, newStatus) => {
     try {
@@ -71,9 +84,8 @@ export default function TasksPage() {
     const due = task.dueDate ? new Date(task.dueDate) : null;
     const isOverdue = due && due < now && task.status !== 'DONE';
     
-    // Attach computed flags for rendering
     task._isOverdue = isOverdue;
-    task._daysOverdue = isOverdue ? Math.ceil((now - due) / (1000 * 60 * 60 * 24)) : 0;
+    task._daysOverdue = isOverdue ? Math.ceil((now.getTime() - due.getTime()) / (1000 * 60 * 60 * 24)) : 0;
     
     if (isOverdue) overdueTasks.push(task);
     else if (task.status === 'TODO') todoTasks.push(task);
@@ -81,104 +93,111 @@ export default function TasksPage() {
     else if (task.status === 'DONE') doneTasks.push(task);
   });
 
-  const priorityColors = { HIGH: 'bg-red-500', MEDIUM: 'bg-yellow-500', LOW: 'bg-green-500' };
-  const statusBadges = {
-    TODO: 'bg-gray-100 text-gray-700 border-gray-200',
-    IN_PROGRESS: 'bg-blue-100 text-blue-700 border-blue-200',
-    DONE: 'bg-green-100 text-green-700 border-green-200'
+  const priorityColors = { 
+    HIGH: 'text-rose-500 bg-rose-50 border-rose-100', 
+    MEDIUM: 'text-amber-500 bg-amber-50 border-amber-100', 
+    LOW: 'text-emerald-500 bg-emerald-50 border-emerald-100' 
+  };
+
+  const statusIcons = {
+    TODO: <Circle size={16} className="text-slate-400" />,
+    IN_PROGRESS: <Clock size={16} className="text-amber-500" />,
+    DONE: <CheckCircle2 size={16} className="text-emerald-500" />
   };
 
   const renderTask = (task) => {
-    // A task can be updated if the user is a system ADMIN, project ADMIN, or assigned to the task.
-    // We get 'isAdmin' context from the backend, but fallback to general rules:
     const canUpdateStatus = user?.role === 'ADMIN' || task.assignedToId === user?.id || task.project?.isAdmin;
     const due = task.dueDate ? new Date(task.dueDate) : null;
 
     return (
-      <div key={task.id} className={`bg-white rounded-xl border p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:shadow-md ${task._isOverdue ? 'border-red-300 border-l-4 border-l-red-500 bg-red-50/20' : 'border-gray-200 border-l-4 ' + (task.priority === 'HIGH' ? 'border-l-red-400' : task.priority === 'MEDIUM' ? 'border-l-yellow-400' : 'border-l-green-400')}`}>
-        <div className="flex gap-4 min-w-0 flex-1">
+      <div key={task.id} className={`group bg-white rounded-2xl border p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:shadow-lg hover:border-indigo-200 ${task._isOverdue ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200'}`}>
+        <div className="flex gap-4 min-w-0 flex-1 items-start">
+          <div className="mt-1">
+            {task._isOverdue ? <AlertCircle size={18} className="text-rose-500 animate-pulse" /> : statusIcons[task.status]}
+          </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-1.5">
-              <h4 className="font-bold text-gray-900 text-base leading-snug">{task.title}</h4>
-              <span className="bg-indigo-50 text-indigo-700 text-[10px] font-bold px-2 py-0.5 rounded-md border border-indigo-100">
-                {task.project?.name}
+              <h4 className={`font-bold text-base leading-snug transition-colors group-hover:text-indigo-600 ${task._isOverdue ? 'text-rose-700' : 'text-slate-800'}`}>{task.title}</h4>
+              <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-widest border border-indigo-100">
+                {task.project?.name || 'No Project'}
+              </span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest border ${priorityColors[task.priority] || priorityColors.LOW}`}>
+                {task.priority}
               </span>
             </div>
             
-            <div className="flex items-center gap-2 mt-2">
-              {task.assignedTo ? (
-                <div className="flex items-center gap-1.5">
-                  <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-700">
-                    {task.assignedTo.name.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-xs text-gray-500 font-medium">{task.assignedTo.name}</span>
+            <div className="flex items-center gap-4 mt-2">
+              <div className="flex items-center gap-1.5 text-slate-500">
+                <User size={14} className="text-slate-400" />
+                <span className="text-xs font-medium">{task.assignedTo?.name || 'Unassigned'}</span>
+              </div>
+              {due && (
+                <div className={`flex items-center gap-1.5 ${task._isOverdue ? 'text-rose-600' : 'text-slate-500'}`}>
+                  <Clock size={14} className={task._isOverdue ? 'text-rose-500' : 'text-slate-400'} />
+                  <span className="text-xs font-bold uppercase tracking-wider">
+                    {due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
                 </div>
-              ) : (
-                <span className="text-xs text-gray-400 font-medium italic">Unassigned</span>
               )}
             </div>
           </div>
         </div>
         
-        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 sm:gap-2 shrink-0 border-t sm:border-0 border-gray-100 pt-3 sm:pt-0 mt-2 sm:mt-0">
+        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 sm:gap-2 shrink-0 border-t sm:border-0 border-slate-100 pt-3 sm:pt-0 mt-2 sm:mt-0">
           {canUpdateStatus ? (
             <select
               value={task.status}
               onChange={(e) => handleStatusChange(task.id, e.target.value)}
-              className={`text-xs font-bold px-3 py-1 rounded-full border outline-none cursor-pointer w-full sm:w-auto ${statusBadges[task.status]}`}
+              className="text-[10px] font-bold uppercase tracking-widest bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg outline-none cursor-pointer focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all w-full sm:w-auto"
             >
               <option value="TODO">To Do</option>
               <option value="IN_PROGRESS">In Progress</option>
               <option value="DONE">Done</option>
             </select>
+
           ) : (
-            <span className={`text-xs font-bold px-3 py-1 rounded-full border text-center w-full sm:w-auto ${statusBadges[task.status]}`}>
-              {task.status.replace('_', ' ')}
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+              {task.status?.replace('_', ' ') || 'Unknown'}
             </span>
           )}
           
-          {due && (
-            <div className="text-right flex sm:flex-col items-center sm:items-end gap-2 sm:gap-0">
-              <p className={`text-xs font-medium ${task._isOverdue ? 'text-red-600 font-bold' : 'text-gray-500'}`}>
-                Due {due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </p>
-              {task._isOverdue && (
-                <span className="bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider mt-0.5 whitespace-nowrap">
-                  {task._daysOverdue} days overdue
-                </span>
-              )}
-            </div>
+          {task._isOverdue && (
+            <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-widest whitespace-nowrap">
+              {task._daysOverdue}D Overdue
+            </span>
           )}
         </div>
       </div>
     );
   };
 
-  const renderGroup = (title, items, groupKey, colorClass, emptyMessage) => {
-    // Only show Overdue section if there are actually overdue tasks or if it's currently selected as a filter?
-    // Actually, always show sections unless specifically filtered out, or just hide Overdue if 0 to keep it clean.
+  const renderGroup = (title, items, groupKey, colorClass, icon) => {
     if (groupKey === 'overdue' && items.length === 0 && filterStatus === 'ALL') return null;
-
     const isCollapsed = collapsed[groupKey];
 
     return (
-      <div className="mb-8">
+      <div className="mb-8" key={groupKey}>
         <button 
           onClick={() => toggleGroup(groupKey)}
-          className="flex items-center gap-2 w-full text-left mb-3 group outline-none"
+          className="flex items-center justify-between w-full text-left mb-4 group outline-none bg-white p-3 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-200 transition-all"
         >
-          <span className={`text-lg transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`}>▼</span>
-          <h2 className={`text-lg font-bold ${colorClass}`}>{title}</h2>
-          <span className="bg-gray-200 text-gray-700 py-0.5 px-2.5 rounded-full text-xs font-bold ml-2">
-            {items.length}
-          </span>
+          <div className="flex items-center gap-3">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${colorClass.replace('text', 'bg').replace('500', '50').replace('600', '50').replace('700', '50').replace('800', '50')}`}>
+              {icon && React.cloneElement(icon, { size: 18, className: colorClass })}
+            </div>
+            <h2 className={`text-sm font-bold uppercase tracking-widest ${colorClass}`}>{title}</h2>
+            <span className="bg-slate-100 text-slate-500 py-0.5 px-2 rounded-lg text-[10px] font-bold border border-slate-200">
+              {items.length}
+            </span>
+          </div>
+          <ChevronDown size={18} className={`text-slate-400 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`} />
         </button>
-        
+
         {!isCollapsed && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {items.length === 0 ? (
-              <div className="bg-white/50 border border-dashed border-gray-300 rounded-xl p-8 text-center text-gray-500 text-sm font-medium">
-                {emptyMessage}
+              <div className="bg-slate-50/50 border border-dashed border-slate-200 rounded-2xl p-12 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">
+                No tasks in this category
               </div>
             ) : (
               items.map(renderTask)
@@ -190,71 +209,80 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="animate-fade-in max-w-7xl mx-auto pb-10">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">All Tasks</h1>
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Global Task Manager</h1>
+          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Unified view of all project responsibilities</p>
+        </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-8 flex flex-col md:flex-row gap-4">
-        <div className="flex-1 relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row gap-4 items-center">
+        <div className="flex-1 relative w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
             type="text"
             placeholder="Search tasks by title..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex gap-4">
-          <select 
-            className="border border-gray-300 text-gray-700 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none bg-white min-w-[140px]"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="ALL">All Statuses</option>
-            <option value="TODO">To Do</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="DONE">Done</option>
-          </select>
-          <select 
-            className="border border-gray-300 text-gray-700 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none bg-white min-w-[140px]"
-            value={filterPriority}
-            onChange={(e) => setFilterPriority(e.target.value)}
-          >
-            <option value="ALL">All Priorities</option>
-            <option value="HIGH">High Priority</option>
-            <option value="MEDIUM">Medium Priority</option>
-            <option value="LOW">Low Priority</option>
-          </select>
+        <div className="flex gap-4 w-full lg:w-auto">
+          <div className="relative flex-1 lg:flex-none">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+            <select 
+              className="w-full lg:w-40 pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-600 outline-none appearance-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="ALL">Status: All</option>
+              <option value="TODO">To Do</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="DONE">Done</option>
+            </select>
+          </div>
+          <div className="relative flex-1 lg:flex-none">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+            <select 
+              className="w-full lg:w-40 pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-600 outline-none appearance-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+              value={filterPriority}
+              onChange={(e) => setFilterPriority(e.target.value)}
+            >
+              <option value="ALL">Priority: All</option>
+              <option value="HIGH">High</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
+            </select>
+          </div>
         </div>
       </div>
 
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="h-24 bg-white rounded-xl border border-gray-200 animate-pulse"></div>
+            <div key={i} className="h-24 bg-white rounded-2xl border border-slate-200 animate-pulse"></div>
           ))}
         </div>
-      ) : tasks.length === 0 && search ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-16 text-center shadow-sm">
-          <div className="text-5xl mb-4">🔍</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">No tasks found</h2>
-          <p className="text-gray-500">Try adjusting your filters or search terms.</p>
-        </div>
       ) : tasks.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-16 text-center shadow-sm">
-          <div className="text-5xl mb-4">✅</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">You're all clear!</h2>
-          <p className="text-gray-500">There are no tasks available across your projects.</p>
+        <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center shadow-sm">
+          <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mx-auto mb-6">
+            <CheckCircle2 size={32} />
+          </div>
+          <h2 className="text-xl font-bold text-slate-800 mb-2">
+            {search ? 'No matches found' : 'All clear!'}
+          </h2>
+          <p className="text-slate-500 max-w-md mx-auto">
+            {search ? 'Try adjusting your filters or search terms.' : 'There are no active tasks to display at this time.'}
+          </p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {renderGroup('🔥 Overdue', overdueTasks, 'overdue', 'text-red-600', 'No tasks here')}
-          {renderGroup('📋 To Do', todoTasks, 'TODO', 'text-gray-800', 'No tasks here')}
-          {renderGroup('⚡ In Progress', inProgressTasks, 'IN_PROGRESS', 'text-blue-700', 'No tasks here')}
-          {renderGroup('✅ Done', doneTasks, 'DONE', 'text-green-700', 'No tasks here')}
+        <div className="space-y-2 pb-12">
+          {renderGroup('Overdue Attention', overdueTasks, 'overdue', 'text-rose-600', <AlertCircle />)}
+          {renderGroup('Backlog / To Do', todoTasks, 'TODO', 'text-slate-600', <Circle />)}
+          {renderGroup('In Active Progress', inProgressTasks, 'IN_PROGRESS', 'text-amber-500', <Clock />)}
+          {renderGroup('Completed Tasks', doneTasks, 'DONE', 'text-emerald-500', <CheckCircle2 />)}
         </div>
       )}
     </div>

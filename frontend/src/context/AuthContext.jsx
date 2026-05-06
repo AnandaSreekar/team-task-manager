@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 
 const AuthContext = createContext(null);
 
@@ -18,8 +18,8 @@ export const AuthProvider = ({ children }) => {
       const savedToken = localStorage.getItem('token');
       if (savedToken) {
         setToken(savedToken);
-        // We set loading to false quickly to avoid the "Infinite Spinner"
-        // In a real app, you'd verify the token with an API call here
+        // Sync token to axios on refresh
+        api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
       }
       setLoading(false);
     };
@@ -29,6 +29,7 @@ export const AuthProvider = ({ children }) => {
   const login = (userData, newToken) => {
     localStorage.setItem('token', newToken);
     localStorage.setItem('user', JSON.stringify(userData));
+    api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     setToken(newToken);
     setUser(userData);
   };
@@ -36,6 +37,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    delete api.defaults.headers.common['Authorization'];
     setToken(null);
     setUser(null);
   };
@@ -47,4 +49,8 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used inside AuthProvider');
+  return context;
+};

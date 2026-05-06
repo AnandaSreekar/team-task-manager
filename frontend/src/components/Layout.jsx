@@ -1,10 +1,14 @@
+import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LayoutDashboard, FolderKanban, CheckSquare, Users, User, LogOut, Zap, Bell } from 'lucide-react';
+import ErrorBoundary from './ErrorBoundary';
+import TaskModal from './TaskModal';
 
 const Layout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -17,7 +21,7 @@ const Layout = () => {
     { name: 'Tasks', path: '/tasks', icon: CheckSquare },
     { name: 'Team', path: '/users', icon: Users, adminOnly: true },
     { name: 'Profile', path: '/profile', icon: User },
-  ].filter(item => !item.adminOnly || user?.role === 'admin');
+  ].filter(item => !item.adminOnly || user?.role === 'ADMIN');
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
@@ -75,15 +79,28 @@ const Layout = () => {
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Active Sprint</p>
           </div>
           <div className="flex items-center gap-4">
-            <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-xs hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100">+ NEW TASK</button>
+            <button 
+              onClick={() => setIsTaskModalOpen(true)}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-xs hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100"
+            >
+              + NEW TASK
+            </button>
             <button className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-50"><Bell size={18} /></button>
           </div>
         </header>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </div>
       </main>
+
+      {/* Global Modals */}
+      <TaskModal 
+        isOpen={isTaskModalOpen} 
+        onClose={() => setIsTaskModalOpen(false)} 
+      />
     </div>
   );
 };

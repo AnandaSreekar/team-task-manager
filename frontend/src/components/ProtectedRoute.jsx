@@ -7,9 +7,12 @@ const ProtectedRoute = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-50">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Verifying Session</p>
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative">
+            <div className="w-16 h-16 rounded-3xl border-4 border-indigo-100 animate-pulse"></div>
+            <div className="absolute inset-0 w-16 h-16 rounded-3xl border-t-4 border-indigo-600 animate-spin"></div>
+          </div>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Securing Workspace</p>
         </div>
       </div>
     );

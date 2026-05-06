@@ -363,6 +363,34 @@ const getDashboard = async (req, res, next) => {
     });
     const recentActivity = recentActivityRaw.map(addComputedFields);
 
+    // Weekly completion data (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const weeklyTasksRaw = await prisma.task.findMany({
+      where: {
+        ...tasksCondition,
+        status: 'DONE',
+        updatedAt: { gte: sevenDaysAgo }
+      },
+      select: { updatedAt: true }
+    });
+
+    // Group by day of week
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weeklyCompletionMap = {};
+    days.forEach(day => { weeklyCompletionMap[day] = 0; });
+
+    weeklyTasksRaw.forEach(task => {
+      const dayName = days[new Date(task.updatedAt).getDay()];
+      weeklyCompletionMap[dayName]++;
+    });
+
+    const weeklyCompletion = days.map(day => ({
+      day,
+      completed: weeklyCompletionMap[day]
+    }));
+
     res.status(200).json({
       success: true,
       message: 'Dashboard stats loaded.',
@@ -373,9 +401,11 @@ const getDashboard = async (req, res, next) => {
         tasksByPriority,
         overdueTasks,
         myAssignedTasks,
-        recentActivity
+        recentActivity,
+        weeklyCompletion
       }
     });
+
 
   } catch (err) {
     console.error('Dashboard route error:', err);
