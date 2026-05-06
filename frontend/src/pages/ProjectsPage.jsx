@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext';
 import { Search, Plus, FolderKanban, Users, CheckSquare, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ProjectCardSkeleton } from '../components/Skeleton';
+import ProjectModal from '../components/ProjectModal';
 
 export default function ProjectsPage() {
   const { user } = useAuth();
@@ -14,9 +15,6 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', description: '' });
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState('');
 
   const fetchProjects = async () => {
     try {
@@ -37,23 +35,7 @@ export default function ProjectsPage() {
     fetchProjects();
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.name.trim()) return setFormError('Project name is required');
-    
-    try {
-      setSubmitting(true);
-      await createProject(formData);
-      toast.success('Project created successfully!');
-      setIsModalOpen(false);
-      setFormData({ name: '', description: '' });
-      fetchProjects();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to create project');
-    } finally {
-      setSubmitting(false);
-    }
-  };
+
 
   const filteredProjects = projects.filter(p => 
     p.name?.toLowerCase().includes(search.toLowerCase()) || 
@@ -189,61 +171,11 @@ export default function ProjectsPage() {
         </motion.div>
       )}
 
-      {/* New Project Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md relative z-10 overflow-hidden">
-            <div className="p-8">
-              <h2 className="text-2xl font-bold text-slate-800 mb-2">Create Workspace</h2>
-              <p className="text-sm text-slate-500 mb-8">Set up a new project to start collaborating with your team.</p>
-              
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Project Name</label>
-                  <input
-                    type="text"
-                    autoFocus
-                    className={`w-full bg-white text-gray-900 placeholder:text-gray-400 border ${formError && !formData.name ? 'border-rose-500 focus:ring-rose-500/20' : 'border-gray-300 focus:ring-violet-500 focus:border-violet-500'} rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 transition-all`}
-                    placeholder="e.g. Website Redesign"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  />
-                  {formError && !formData.name && <p className="text-rose-500 text-[10px] font-bold uppercase tracking-widest mt-2">{formError}</p>}
-                </div>
-                
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Description</label>
-                  <textarea
-                    rows="3"
-                    className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all resize-none"
-                    placeholder="Briefly describe the project goals..."
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  ></textarea>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="flex-1 px-4 py-3 border border-slate-200 text-slate-600 rounded-xl font-bold text-xs hover:bg-slate-50 transition-all uppercase tracking-widest"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 disabled:opacity-70 uppercase tracking-widest"
-                  >
-                    {submitting ? 'Creating...' : 'Create Project'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+      <ProjectModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onProjectCreated={fetchProjects} 
+      />
     </div>
   );
 }

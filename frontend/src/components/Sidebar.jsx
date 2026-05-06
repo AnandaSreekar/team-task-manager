@@ -94,10 +94,21 @@ export default function Sidebar() {
           </div>
           <div style={{ flex: 1, overflow: 'hidden' }}>
             <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {user?.name}
+              {user?.name || (user?.role === 'ADMIN' ? 'Admin User' : 'Team Member')}
             </div>
-            <div style={{ display: 'inline-block', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: user?.role === 'ADMIN' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(148, 163, 184, 0.2)', color: user?.role === 'ADMIN' ? '#818cf8' : '#94a3b8', marginTop: '2px', fontWeight: 600, letterSpacing: '0.05em' }}>
-              {user?.role}
+            <div style={{ 
+              display: 'inline-block', 
+              fontSize: '0.65rem', 
+              padding: '2px 8px', 
+              borderRadius: '4px', 
+              backgroundColor: user?.role === 'ADMIN' ? 'rgba(99, 102, 241, 0.25)' : 'rgba(148, 163, 184, 0.15)', 
+              color: user?.role === 'ADMIN' ? '#a5b4fc' : '#94a3b8', 
+              marginTop: '4px', 
+              fontWeight: 700, 
+              letterSpacing: '0.05em',
+              border: user?.role === 'ADMIN' ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid rgba(148, 163, 184, 0.2)'
+            }}>
+              {user?.role === 'ADMIN' ? 'ADMIN ROLE' : 'MEMBER ROLE'}
             </div>
           </div>
         </NavLink>

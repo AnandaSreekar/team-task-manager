@@ -64,7 +64,7 @@ const MEMBER_INCLUDE = {
  */
 const createProject = async (req, res, next) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, status, dueDate } = req.body;
 
     // ── Validate name ─────────────────────────────────────────────────────────
     if (!name || typeof name !== 'string' || name.trim().length < 3) {
@@ -82,6 +82,8 @@ const createProject = async (req, res, next) => {
       data: {
         name:        name.trim(),
         description: description?.trim() || null,
+        status:      status || 'ACTIVE',
+        dueDate:     dueDate ? new Date(dueDate) : null,
         createdById: req.user.id,
 
         // Auto-enroll the creator as project ADMIN.

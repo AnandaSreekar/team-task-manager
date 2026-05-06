@@ -15,6 +15,12 @@ enum Role {
   MEMBER
 }
 
+enum ProjectStatus {
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+}
+
 enum TaskStatus {
   TODO
   IN_PROGRESS
@@ -46,11 +52,13 @@ model User {
 }
 
 model Project {
-  id          String   @id @default(uuid())
+  id          String        @id @default(uuid())
   name        String
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      ProjectStatus @default(ACTIVE)
+  dueDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   // Relations
   createdById String

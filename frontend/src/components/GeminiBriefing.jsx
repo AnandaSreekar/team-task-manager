@@ -1,45 +1,32 @@
-import React, { useState } from 'react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, BrainCircuit, Loader2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { generateBriefing as fetchBriefing } from '../api/gemini.api';
 
 const GeminiBriefing = ({ stats }) => {
   const [briefing, setBriefing] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const generateBriefing = async () => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      setError('Gemini API Key missing. Please set VITE_GEMINI_API_KEY in .env');
-      return;
+  // Optional: Load cached briefing on mount
+  useEffect(() => {
+    const cached = sessionStorage.getItem('taskflow_ai_briefing');
+    if (cached) {
+      setBriefing(cached);
     }
+  }, []);
 
+  const handleGenerate = async () => {
     try {
       setLoading(true);
       setError('');
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
-      const prompt = `
-        You are an intelligent project management assistant. 
-        Analyze the following project stats and provide a professional, encouraging 3-sentence summary of project health and potential blockers.
-        
-        Stats:
-        - Total Tasks: ${stats.totalTasks}
-        - Tasks by Status: ${JSON.stringify(stats.tasksByStatus)}
-        - Overdue Tasks: ${stats.overdueTasks.length}
-        - Total Projects: ${stats.totalProjects}
-        
-        Format: Return only the 3 sentences. No Markdown formatting.
-      `;
-
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      setBriefing(response.text());
+      
+      const result = await fetchBriefing(stats);
+      setBriefing(result);
+      sessionStorage.setItem('taskflow_ai_briefing', result);
     } catch (err) {
       console.error('Gemini Error:', err);
-      setError('Failed to reach Gemini AI. Please check your connection or API key.');
+      setError(err.message || 'Failed to reach Gemini AI. Please check your connection or API key.');
     } finally {
       setLoading(false);
     }
@@ -68,7 +55,7 @@ const GeminiBriefing = ({ stats }) => {
           </div>
           
           <button 
-            onClick={generateBriefing}
+            onClick={handleGenerate}
             disabled={loading}
             className="flex items-center gap-2 px-6 py-2.5 bg-white text-indigo-700 rounded-xl font-bold text-xs hover:bg-indigo-50 transition-all shadow-lg shadow-indigo-900/20 disabled:opacity-70 group"
           >

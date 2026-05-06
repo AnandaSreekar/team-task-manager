@@ -10,8 +10,10 @@ import { Activity, Clock, CheckCircle2, AlertCircle, Layout, ArrowUpRight } from
 import { DashboardSkeleton } from '../components/Skeleton';
 import TaskModal from '../components/TaskModal';
 import { Plus } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const DashboardPage = () => {
+  const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -101,12 +103,14 @@ const DashboardPage = () => {
           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Overview of your team's progress</p>
         </div>
         
-        <button 
-          onClick={() => setShowTaskModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-xs hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 uppercase tracking-widest"
-        >
-          <Plus size={16} /> New Task
-        </button>
+        {user?.role === 'ADMIN' && (
+          <button 
+            onClick={() => setShowTaskModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-xs hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 uppercase tracking-widest"
+          >
+            <Plus size={16} /> New Task
+          </button>
+        )}
       </div>
 
       {showTaskModal && (
@@ -114,16 +118,16 @@ const DashboardPage = () => {
       )}
 
       {/* AI Briefing Section */}
-      <GeminiBriefing stats={stats} />
+      {user?.role === 'ADMIN' && <GeminiBriefing stats={stats} />}
 
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Platform Load', value: totalTasks, icon: Activity, color: 'indigo' },
+          user?.role === 'ADMIN' ? { label: 'Platform Load', value: totalTasks, icon: Activity, color: 'indigo' } : null,
           { label: 'Active Focus', value: myAssignedTasks.length, icon: Layout, color: 'blue' },
-          { label: 'Success Rate', value: `${totalTasks > 0 ? Math.round((completedCount/totalTasks)*100) : 0}%`, icon: CheckCircle2, color: 'emerald' },
-          { label: 'Risk Factor', value: overdueTasks.length, icon: Clock, color: 'rose', alert: overdueTasks.length > 0 },
-        ].map((stat, i) => (
+          { label: 'Completion Rate', value: `${totalTasks > 0 ? Math.round((completedCount/totalTasks)*100) : 0}%`, icon: CheckCircle2, color: 'emerald' },
+          user?.role === 'ADMIN' ? { label: 'Risk Factor', value: overdueTasks.length, icon: Clock, color: 'rose', alert: overdueTasks.length > 0 } : null,
+        ].filter(Boolean).map((stat, i) => (
           <motion.div 
             key={i} 
             variants={itemVariants}
@@ -142,6 +146,7 @@ const DashboardPage = () => {
       </div>
 
       {/* Charts Section */}
+      {user?.role === 'ADMIN' && (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Weekly Area Chart */}
         <motion.div variants={itemVariants} className="lg:col-span-2 bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
@@ -239,6 +244,7 @@ const DashboardPage = () => {
           </div>
         </motion.div>
       </div>
+      )}
 
       {/* Assignment Table & Sprint Health */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -293,6 +299,7 @@ const DashboardPage = () => {
           </div>
         </motion.div>
 
+        {user?.role === 'ADMIN' && (
         <motion.div variants={itemVariants} className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
           <h3 className="font-bold text-slate-800 text-lg mb-8">Team Health Metrics</h3>
           <div className="space-y-8">
@@ -332,6 +339,7 @@ const DashboardPage = () => {
             </ul>
           </div>
         </motion.div>
+        )}
       </div>
     </motion.div>
   );
