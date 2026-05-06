@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle2, AlertCircle, Calendar, Flag, User, Briefcase } from 'lucide-react';
 import { getProjects } from '../api/project.api';
 import { createTask } from '../api/task.api';
-import { useToast } from './Toast';
+import { useToast } from '../context/ToastContext';
 
 const TaskModal = ({ isOpen, onClose }) => {
   const { toast } = useToast();
@@ -29,9 +29,10 @@ const TaskModal = ({ isOpen, onClose }) => {
     try {
       setFetchingProjects(true);
       const res = await getProjects();
-      setProjects(res.data.projects || []);
-      if (res.data.projects?.length > 0 && !formData.projectId) {
-        setFormData(prev => ({ ...prev, projectId: res.data.projects[0].id }));
+      const data = res.data?.data?.projects || res.data?.projects || res.data || [];
+      setProjects(Array.isArray(data) ? data : []);
+      if (data.length > 0 && !formData.projectId) {
+        setFormData(prev => ({ ...prev, projectId: data[0].id }));
       }
     } catch (err) {
       toast.error('Failed to load projects');

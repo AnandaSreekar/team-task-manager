@@ -5,7 +5,7 @@ import api from '../api/axios';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
-  const toast = useToast();
+  const { toast } = useToast();
   const [form, setForm] = useState({ name: user?.name || '', email: user?.email || '' });
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirm: '' });
   const [saving, setSaving] = useState(false);
@@ -20,7 +20,9 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       const { data } = await api.patch(`/users/${user.id}`, form);
-      updateUser(data.data.user);
+      // Backend returns data.user or similar
+      const updatedUser = data.data?.user || data.user || data.data;
+      updateUser(updatedUser);
       toast.success('Profile updated!');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update profile.');
@@ -55,105 +57,128 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: 700 }}>
-      <div className="page-header">
-        <h1 className="page-title">Profile</h1>
-        <p className="page-subtitle">Manage your account settings</p>
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ maxWidth: 700 }}>
+      <div className="mb-10">
+        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Profile Settings</h1>
+        <p className="text-sm text-slate-500 mt-1">Manage your account identity and security</p>
       </div>
 
       {/* Avatar Banner */}
-      <div className="card" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 20 }}>
-        <div className="avatar" style={{ width: 72, height: 72, fontSize: '1.5rem', background: color, flexShrink: 0 }}>
+      <div className="bg-white rounded-3xl border border-slate-200 p-8 mb-8 flex items-center gap-6 shadow-sm">
+        <div 
+          className="w-20 h-20 rounded-3xl flex items-center justify-center text-2xl font-bold text-white shadow-lg" 
+          style={{ background: `linear-gradient(135deg, ${color}, ${color}dd)` }}
+        >
           {initials}
         </div>
         <div>
-          <div style={{ fontWeight: 700, fontSize: '1.2rem', color: 'white' }}>{user?.name}</div>
-          <div style={{ color: 'var(--color-muted)', fontSize: '0.9rem' }}>{user?.email}</div>
-          <span className={`badge ${user?.role === 'ADMIN' ? 'badge-admin' : 'badge-member'}`} style={{ marginTop: 6 }}>
-            {user?.role}
-          </span>
+          <div className="text-xl font-bold text-slate-800">{user?.name}</div>
+          <div className="text-sm text-slate-500 font-medium">{user?.email}</div>
+          <div className="mt-3 flex gap-2">
+            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${user?.role === 'ADMIN' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-slate-50 text-slate-500 border border-slate-100'}`}>
+              {user?.role}
+            </span>
+            <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100">
+              Active Session
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Edit Profile */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <h2 style={{ margin: '0 0 20px', fontSize: '1rem', fontWeight: 700 }}>✏️ Edit Profile</h2>
-        <form onSubmit={handleProfile} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div className="form-group">
-            <label className="form-label">Full Name</label>
-            <input
-              id="profile-name"
-              className="form-input"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Email Address</label>
-            <input
-              id="profile-email"
-              type="email"
-              className="form-input"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              required
-            />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? <><span className="spinner" /> Saving...</> : 'Save Changes'}
-            </button>
-          </div>
-        </form>
-      </div>
+      <div className="grid grid-cols-1 gap-8">
+        {/* Edit Profile */}
+        <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+          <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+            <span className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-sm">👤</span>
+            Identity Information
+          </h2>
+          <form onSubmit={handleProfile} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+              <input
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Your full name"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+              <input
+                type="email"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="you@company.com"
+                required
+              />
+            </div>
+            <div className="flex justify-end pt-2">
+              <button 
+                type="submit" 
+                className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-bold text-xs hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-70 uppercase tracking-widest"
+                disabled={saving}
+              >
+                {saving ? 'Saving...' : 'Update Identity'}
+              </button>
+            </div>
+          </form>
+        </div>
 
-      {/* Change Password */}
-      <div className="card">
-        <h2 style={{ margin: '0 0 20px', fontSize: '1rem', fontWeight: 700 }}>🔐 Change Password</h2>
-        <form onSubmit={handlePassword} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div className="form-group">
-            <label className="form-label">Current Password</label>
-            <input
-              id="current-password"
-              type="password"
-              className="form-input"
-              placeholder="••••••••"
-              value={pwForm.currentPassword}
-              onChange={(e) => setPwForm({ ...pwForm, currentPassword: e.target.value })}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">New Password</label>
-            <input
-              id="new-password"
-              type="password"
-              className="form-input"
-              placeholder="Min. 6 characters"
-              value={pwForm.newPassword}
-              onChange={(e) => setPwForm({ ...pwForm, newPassword: e.target.value })}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Confirm New Password</label>
-            <input
-              id="confirm-password"
-              type="password"
-              className="form-input"
-              placeholder="••••••••"
-              value={pwForm.confirm}
-              onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })}
-              required
-            />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button type="submit" className="btn btn-primary" disabled={changingPw}>
-              {changingPw ? <><span className="spinner" /> Updating...</> : 'Update Password'}
-            </button>
-          </div>
-        </form>
+        {/* Change Password */}
+        <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm mb-12">
+          <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+            <span className="w-8 h-8 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-sm">🔐</span>
+            Security Credentials
+          </h2>
+          <form onSubmit={handlePassword} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Current Password</label>
+              <input
+                type="password"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 transition-all"
+                placeholder="••••••••"
+                value={pwForm.currentPassword}
+                onChange={(e) => setPwForm({ ...pwForm, currentPassword: e.target.value })}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">New Password</label>
+                <input
+                  type="password"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+                  placeholder="Min. 6 chars"
+                  value={pwForm.newPassword}
+                  onChange={(e) => setPwForm({ ...pwForm, newPassword: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Confirm New Password</label>
+                <input
+                  type="password"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+                  placeholder="••••••••"
+                  value={pwForm.confirm}
+                  onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+            <div className="flex justify-end pt-2">
+              <button 
+                type="submit" 
+                className="px-8 py-3 bg-slate-800 text-white rounded-2xl font-bold text-xs hover:bg-slate-900 transition-all shadow-lg shadow-slate-100 disabled:opacity-70 uppercase tracking-widest"
+                disabled={changingPw}
+              >
+                {changingPw ? 'Updating...' : 'Update Password'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

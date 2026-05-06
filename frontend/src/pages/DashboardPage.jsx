@@ -8,11 +8,14 @@ import {
 import { motion } from 'framer-motion';
 import { Activity, Clock, CheckCircle2, AlertCircle, Layout, ArrowUpRight } from 'lucide-react';
 import { DashboardSkeleton } from '../components/Skeleton';
+import TaskModal from '../components/TaskModal';
+import { Plus } from 'lucide-react';
 
 const DashboardPage = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -92,6 +95,24 @@ const DashboardPage = () => {
       animate="show"
       className="space-y-8 pb-12"
     >
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Dashboard</h1>
+          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Overview of your team's progress</p>
+        </div>
+        
+        <button 
+          onClick={() => setShowTaskModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-xs hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 uppercase tracking-widest"
+        >
+          <Plus size={16} /> New Task
+        </button>
+      </div>
+
+      {showTaskModal && (
+        <TaskModal isOpen={showTaskModal} onClose={() => setShowTaskModal(false)} />
+      )}
+
       {/* AI Briefing Section */}
       <GeminiBriefing stats={stats} />
 
