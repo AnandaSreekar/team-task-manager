@@ -204,7 +204,7 @@ export default function ProjectsPage() {
                   <input
                     type="text"
                     autoFocus
-                    className={`w-full bg-slate-50 border ${formError && !formData.name ? 'border-rose-500 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-indigo-500/20 focus:border-indigo-500'} rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 transition-all`}
+                    className={`w-full bg-white text-gray-900 placeholder:text-gray-400 border ${formError && !formData.name ? 'border-rose-500 focus:ring-rose-500/20' : 'border-gray-300 focus:ring-violet-500 focus:border-violet-500'} rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 transition-all`}
                     placeholder="e.g. Website Redesign"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -216,7 +216,7 @@ export default function ProjectsPage() {
                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Description</label>
                   <textarea
                     rows="3"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none"
+                    className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all resize-none"
                     placeholder="Briefly describe the project goals..."
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}

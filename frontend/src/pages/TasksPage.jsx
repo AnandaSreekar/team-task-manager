@@ -148,7 +148,7 @@ export default function TasksPage() {
             <select
               value={task.status}
               onChange={(e) => handleStatusChange(task.id, e.target.value)}
-              className="text-[10px] font-bold uppercase tracking-widest bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg outline-none cursor-pointer focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all w-full sm:w-auto"
+              className="text-[10px] font-bold uppercase tracking-widest bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 px-3 py-1.5 rounded-lg outline-none cursor-pointer focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all w-full sm:w-auto"
             >
               <option value="TODO">To Do</option>
               <option value="IN_PROGRESS">In Progress</option>
@@ -224,7 +224,7 @@ export default function TasksPage() {
           <input
             type="text"
             placeholder="Search tasks by title..."
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+            className="w-full pl-10 pr-4 py-2.5 bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -233,7 +233,7 @@ export default function TasksPage() {
           <div className="relative flex-1 lg:flex-none">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
             <select 
-              className="w-full lg:w-40 pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-600 outline-none appearance-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+              className="w-full lg:w-40 pl-9 pr-4 py-2.5 bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-xl text-xs font-bold uppercase tracking-widest outline-none appearance-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
@@ -246,7 +246,7 @@ export default function TasksPage() {
           <div className="relative flex-1 lg:flex-none">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
             <select 
-              className="w-full lg:w-40 pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-600 outline-none appearance-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+              className="w-full lg:w-40 pl-9 pr-4 py-2.5 bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-xl text-xs font-bold uppercase tracking-widest outline-none appearance-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all"
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
             >

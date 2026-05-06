@@ -416,7 +416,7 @@ export default function ProjectDetailPage() {
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Select User</label>
                 <select 
-                  className={`w-full bg-slate-50 border ${memberError && !memberForm.userId ? 'border-rose-500' : 'border-slate-200'} rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all`}
+                  className={`w-full bg-white text-gray-900 placeholder:text-gray-400 border ${memberError && !memberForm.userId ? 'border-rose-500' : 'border-gray-300'} rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all`}
                   value={memberForm.userId}
                   onChange={(e) => setMemberForm({...memberForm, userId: e.target.value})}
                 >
@@ -429,7 +429,7 @@ export default function ProjectDetailPage() {
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Permission Role</label>
                 <select 
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all"
+                  className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all"
                   value={memberForm.role}
                   onChange={(e) => setMemberForm({...memberForm, role: e.target.value})}
                 >
@@ -460,7 +460,7 @@ export default function ProjectDetailPage() {
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Task Title</label>
                 <input 
                   type="text" autoFocus
-                  className={`w-full bg-slate-50 border ${taskError && !taskForm.title ? 'border-rose-500' : 'border-slate-200'} rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all`}
+                  className={`w-full bg-white text-gray-900 placeholder:text-gray-400 border ${taskError && !taskForm.title ? 'border-rose-500' : 'border-gray-300'} rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all`}
                   value={taskForm.title} onChange={(e) => setTaskForm({...taskForm, title: e.target.value})}
                   placeholder="e.g. Implement Auth Flow"
                 />
@@ -468,7 +468,7 @@ export default function ProjectDetailPage() {
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Context / Description</label>
                 <textarea 
-                  rows="2" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none"
+                  rows="2" className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all resize-none"
                   value={taskForm.description} onChange={(e) => setTaskForm({...taskForm, description: e.target.value})}
                   placeholder="Additional details..."
                 ></textarea>
@@ -476,7 +476,7 @@ export default function ProjectDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Priority</label>
-                  <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all" value={taskForm.priority} onChange={(e) => setTaskForm({...taskForm, priority: e.target.value})}>
+                  <select className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all" value={taskForm.priority} onChange={(e) => setTaskForm({...taskForm, priority: e.target.value})}>
                     <option value="LOW">Low</option>
                     <option value="MEDIUM">Medium</option>
                     <option value="HIGH">High</option>
@@ -484,12 +484,12 @@ export default function ProjectDetailPage() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Deadline</label>
-                  <input type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all" value={taskForm.dueDate} onChange={(e) => setTaskForm({...taskForm, dueDate: e.target.value})} />
+                  <input type="date" className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all" value={taskForm.dueDate} onChange={(e) => setTaskForm({...taskForm, dueDate: e.target.value})} />
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Assignee</label>
-                <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all" value={taskForm.assignedToId} onChange={(e) => setTaskForm({...taskForm, assignedToId: e.target.value})}>
+                <select className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all" value={taskForm.assignedToId} onChange={(e) => setTaskForm({...taskForm, assignedToId: e.target.value})}>
                   <option value="">-- Unassigned --</option>
                   {project.members?.map(m => (
                     <option key={m.userId} value={m.userId}>{m.user.name}</option>
